@@ -25,6 +25,7 @@ class epmployeeClass:
         self.var_email = StringVar()
         self.var_pass = StringVar()
         self.var_utype = StringVar()
+        self.var_address = StringVar()
         self.var_salary = StringVar()
 
 
@@ -40,7 +41,7 @@ class epmployeeClass:
         cmb_saerch.place(x=10,y=10,width=180)
         cmb_saerch.current(0)
 
-        txt_search = Entry(SearchFrame,bg='lightyellow').place(x=200,y=10)
+        txt_search = Entry(SearchFrame, textvariable=self.var_searchtxt,bg='lightyellow').place(x=200,y=10)
         btn_srch = Button(SearchFrame,text='Search',command= self.search,bg='darkgreen',fg='white',cursor='hand2').place(x=400,y=10,width=150)
 
         #---frame
@@ -123,7 +124,7 @@ class epmployeeClass:
 
 
 
-        self.txt_address = Text(Entry(self.root, bg="lightyellow", fg="black").place(x=150, y=270))
+        txt_address = Entry(self.root, textvariable=self.var_address,bg="lightyellow", fg="black").place(x=150, y=270)
 
         txt_salary= Entry(self.root, textvariable=self.var_salary, bg="lightyellow", fg="black").place(x=500, y=270,width=180)
 
@@ -210,7 +211,7 @@ class epmployeeClass:
                             self.var_doj.get(),
                             self.var_pass.get(),
                             self.var_utype.get(),
-                            self.txt_address.get('1.0', END),
+                            self.var_address.get(),
                             self.var_salary.get()
                         ))
                     con.commit()
@@ -235,8 +236,8 @@ class epmployeeClass:
         self.var_doj.set(row[6]),
         self.var_pass.set(row[7]),
         self.var_utype.set(row[8]),
-        self.txt_address.delete('1.0', END),
-        self.txt_address.insert( END,row[9]),
+        self.var_address.set(row[9]),
+
         self.var_salary.set(row[10])
 
     def show(self):
@@ -275,7 +276,7 @@ class epmployeeClass:
                             self.var_doj.get(),
                             self.var_pass.get(),
                             self.var_utype.get(),
-                            self.txt_address.get('1.0', END),
+                            self.var_address.get(),
                             self.var_salary.get(),
                             self.var_emp_id.get()
                         ))
@@ -319,31 +320,32 @@ class epmployeeClass:
         self.var_doj.set(""),
         self.var_pass.set(""),
         self.var_utype.set("Admin"),
-        self.txt_address.delete('1.0', END),
+        self.var_address.set(""),
 
         self.var_salary.set("")
         self.show()
 
     def search(self):
-        con=sqlite3.connect(database='ims.db')
-        cur=con.cursor()
+        con = sqlite3.connect(database='ims.db')
+        cur = con.cursor()
         try:
-            if self.var_searchby.get()=="Select":
-                messagebox.showerror("Select Search by option",parent=self.root)
-            #elif self.var_searchtxt.get()=="":
-                #messagebox.showerror("search input required", parent=self.root)
+            if self.var_searchby.get() == "Select":
+                messagebox.showerror("Select Search by option", parent=self.root)
+            elif self.var_searchtxt.get() == "":
+                messagebox.showerror("search input required", parent=self.root)
             else:
-
-                cur.execute("select * from employee where "+self.var_searchby.get()+" LIKE '%"+self.var_searchtxt.get()+"%'")
+                query = "SELECT * FROM employee WHERE " + self.var_searchby.get() + " LIKE '%"+self.var_searchtxt.get()+"%'"
+                cur.execute(query)
                 rows = cur.fetchall()
-                if len(rows)!=0:
+                if len(rows) != 0:
                     self.EmployeeTable.delete(*self.EmployeeTable.get_children())
                     for row in rows:
-                        self.EmployeeTable.insert('',END,values=row)
+                        self.EmployeeTable.insert('', END, values=row)
+                    con.commit()
                 else:
-                    messagebox.showerror("Error","No record found")
+                    messagebox.showinfo("No search results found. Please try again", parent=self.root)
         except Exception as ex:
-            messagebox.showerror("Error",f"Error due to : {str(ex)}",parent=self.root)
+            messagebox.showerror("Error occurred while searching", parent=self.root, detail=ex)
 
 
 
